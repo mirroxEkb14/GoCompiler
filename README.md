@@ -1,0 +1,1 @@
+This C# projects compiles the Go code and gives the output on the console.

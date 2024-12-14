@@ -1,0 +1,58 @@
+program = { statement } $ ;
+
+statement = short_decl | var_decl_init | var_decl | array_var_decl | array_element_assignment | if_statement | for_statement | func_decl | return_statement | print_func ;
+
+var_decl = "var" ident_list type [ "=" type_list ] ;
+var_decl_init = "var" ident_list "=" ( array_value | type_list | array_init ) ;
+short_decl = ident_list ":=" ( arithmetic_expression | func_call | array_value | array_init | type_list ) ;
+
+array_var_decl = "var" array_value type_only ;
+array_element_assignment = array_value "=" ( arithmetic_expression | type_value ) ;
+array_init = array_multi_access type_only ( array_init_block | array_multi_init_block ) ;
+array_multi_init_block = "{" { array_init_block { "," } } "}" ;
+array_init_block = "{" type_list "}" ;
+array_multi_access = array_access { array_access } ;
+array_access = "[" ( arithmetic_expression | func_call | integer | ident ) "]" ;
+array_value = ident array_multi_access ;
+array_access_type_parameter = "[" "]" { "[" "]" } type_only ;
+
+if_statement = "if" condition "{" { statement } "}" 
+             [ { else_if_statement } ]
+             [ "else" "{" { statement } "}" ] ;
+else_if_statement = "else if" condition "{" { statement } "}" ;
+condition = comparison { logical_operator comparison } ;
+comparison = type_value comparison_operator type_value ;
+
+for_statement = "for" for_clause "{" { statement } "}" ;
+for_clause = for_range | for_init ";" condition ";" for_post ;
+for_range = ident "," ident ":=" "range" ident ;
+for_init = var_integer_init ;
+var_integer_init = ident ":=" integer ;
+for_post = "i++" | "i--" | ident "++" | ident "--" ;
+
+func_decl = "func" ident "(" [ parameter_list ] ")" [ ( "(" type_list ")" | type | array_access_type_parameter ) ] "{" { statement } "}" ;
+parameter_list = parameter { "," parameter } ;
+parameter = ( ident_list | ident ) ( type | array_access_type_parameter ) ;
+return_statement = "return" ( arithmetic_expression | ident_list | type_value ) ;
+arithmetic_expression = arithmetic_member arithmetic_operation arithmetic_member ;
+arithmetic_member = array_value | func_call | type_value ;
+func_call = ident "(" ( arithmetic_expression | type_list ) ")" ;
+
+print_func = "fmt.Print" "(" ( arithmetic_expression | type_value ) ")" ;
+
+ident_list = ident { "," ident } ;
+type_list = type_value { "," type_value } ;
+
+type = "float32" | "int" | "string" | "bool" | ident ;
+type_only = "float32" | "int" | "string" | "bool" ;
+type_value = float32 | integer | string | bool | ident;
+
+arithmetic_operation = "+" | "-" | "*" | "/" | "%" ;
+comparison_operator = "<=" | ">=" | "==" | "!=" | "<" | ">" ;
+logical_operator = "&&" | "||" ;
+
+ident = /[a-zA-Z_][a-zA-Z0-9_]*/ ;
+float32 = /[0-9]+\.[0-9]+/ ;
+integer = /[0-9]+/ ;
+string = /"[^"]*"/ ;
+bool = "true" | "false" ;

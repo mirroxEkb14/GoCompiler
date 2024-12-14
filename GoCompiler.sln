@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoCompilerDemo", "GoCompilerDemo\GoCompilerDemo.csproj", "{234B6E36-9225-41BD-AF30-78F46B9964CB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoLexer", "GoLexer\GoLexer.csproj", "{B7E555BB-03E1-4F06-92DB-1583506218BD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoParser", "GoParser\GoParser.csproj", "{53C65E1D-D946-498A-A8A7-4B9EBF1D3F1E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoSemanticAnalyzer", "GoSemanticAnalyzer\GoSemanticAnalyzer.csproj", "{D50484D7-6126-4D52-9642-AB126172BAB5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoInterpreter", "GoInterpreter\GoInterpreter.csproj", "{870FFDE5-FB68-4ADE-967A-DDF58288C806}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7AB1F6D5-EC28-4D17-A3B1-B9C3AC8B726B}"
+	ProjectSection(SolutionItems) = preProject
+		Grammar\gramatika.ebnf = Grammar\gramatika.ebnf
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{234B6E36-9225-41BD-AF30-78F46B9964CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{234B6E36-9225-41BD-AF30-78F46B9964CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{234B6E36-9225-41BD-AF30-78F46B9964CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{234B6E36-9225-41BD-AF30-78F46B9964CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7E555BB-03E1-4F06-92DB-1583506218BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7E555BB-03E1-4F06-92DB-1583506218BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7E555BB-03E1-4F06-92DB-1583506218BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7E555BB-03E1-4F06-92DB-1583506218BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53C65E1D-D946-498A-A8A7-4B9EBF1D3F1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53C65E1D-D946-498A-A8A7-4B9EBF1D3F1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53C65E1D-D946-498A-A8A7-4B9EBF1D3F1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53C65E1D-D946-498A-A8A7-4B9EBF1D3F1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D50484D7-6126-4D52-9642-AB126172BAB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D50484D7-6126-4D52-9642-AB126172BAB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D50484D7-6126-4D52-9642-AB126172BAB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D50484D7-6126-4D52-9642-AB126172BAB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{870FFDE5-FB68-4ADE-967A-DDF58288C806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{870FFDE5-FB68-4ADE-967A-DDF58288C806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{870FFDE5-FB68-4ADE-967A-DDF58288C806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{870FFDE5-FB68-4ADE-967A-DDF58288C806}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF997537-BB49-48C0-AE0D-919D88C3BD01}
+	EndGlobalSection
+EndGlobal
