@@ -218,6 +218,13 @@ public class Lexer(string sourceCode)
                     return new Token(TokenType.Or, "||", _line, _column);
                 }
                 break;
+            case ':':
+                if (Peek() == '=')
+                {
+                    Advance();
+                    return new Token(TokenType.ShortAssign, ":=", _line, _column);
+                }
+                break;
             case '{': return new Token(TokenType.LeftBrace, c.ToString(), _line, _column);
             case '}': return new Token(TokenType.RightBrace, c.ToString(), _line, _column);
             case '(': return new Token(TokenType.LeftParen, c.ToString(), _line, _column);
@@ -257,6 +264,7 @@ public class Lexer(string sourceCode)
     //
     // Returns:
     //     The current character before advancing.
+    //     Handles tabs appropriately by treating them as multiple spaces (assumes a tab width of 4 spaces).
     private char Advance()
     {
         _column++;
