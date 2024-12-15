@@ -1,4 +1,6 @@
-﻿namespace GoLexer;
+﻿using GoLexer.Tokens;
+
+namespace GoLexer;
 
 //
 // Summary:

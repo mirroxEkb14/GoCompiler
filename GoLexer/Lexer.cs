@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using GoLexer.Tokens;
 
 namespace GoLexer;
 
@@ -13,36 +14,40 @@ public class Lexer(string sourceCode)
     private int _column = 1;
 
     private static readonly Func<char, bool> _isLetterOrDigitOrUnderscore =
-        ch => char.IsLetterOrDigit(ch) || ch == '_';
+        ch => char.IsLetterOrDigit(ch) || ch == TokenType.Underscore.GetChar();
     private static readonly Func<char, bool> _isLetterOrDigit =
         ch => char.IsLetterOrDigit(ch);
     private static readonly Func<char, bool> _isLetterOrUnderscore =
-        ch => char.IsLetter(ch) || ch == '_';
+        ch => char.IsLetter(ch) || ch == TokenType.Underscore.GetChar();
     private static readonly Func<char, bool> _isDigit =
         char.IsDigit;
     private static readonly Func<char, bool> _isString =
-        ch => ch == '"';
+        ch => ch == TokenType.StringLiteral.GetChar();
+    private static readonly Func<char, bool> _isLeftBracket =
+        ch => ch == TokenType.LeftBracket.GetChar();
+    private static readonly Func<char, bool> _isRightBracket =
+        ch => ch == TokenType.RightBracket.GetChar();
 
     //
     // Summary:
     //     Contains keywords (key) recognized by the lexer and their corresponding token types (value).
     private static readonly Dictionary<string, TokenType> Keywords = new()
         {
-            { "var", TokenType.Var },
-            { "func", TokenType.Func },
-            { "if", TokenType.If },
-            { "else", TokenType.Else },
-            { "for", TokenType.For },
-            { "return", TokenType.Return },
-            { "range", TokenType.Range },
-            { "true", TokenType.True },
-            { "false", TokenType.False },
-            { "int", TokenType.Int },
-            { "float32", TokenType.Float32 },
-            { "string", TokenType.String },
-            { "bool", TokenType.Bool },
-            { "fmt.Print", TokenType.Print },
-            { "len", TokenType.Len }
+            { TokenType.Var.GetString(), TokenType.Var },
+            { TokenType.Func.GetString(), TokenType.Func },
+            { TokenType.Return.GetString(), TokenType.Return },
+            { TokenType.If.GetString(), TokenType.If },
+            { TokenType.Else.GetString(), TokenType.Else },
+            { TokenType.For.GetString(), TokenType.For },
+            { TokenType.Range.GetString(), TokenType.Range },
+            { TokenType.Print.GetString(), TokenType.Print },
+            { TokenType.Len.GetString(), TokenType.Len },
+            { TokenType.Int.GetString(), TokenType.Int },
+            { TokenType.Float32.GetString(), TokenType.Float32 },
+            { TokenType.String.GetString(), TokenType.String },
+            { TokenType.Bool.GetString(), TokenType.Bool },
+            { TokenType.True.GetString(), TokenType.True },
+            { TokenType.False.GetString(), TokenType.False },
         };
 
     public List<Token> ScanTokens()
@@ -62,16 +67,164 @@ public class Lexer(string sourceCode)
                 HandleNumber(tokens);
             else if (_isString(c))
                 HandleString(tokens);
-            else if (c == '[')
-                tokens.Add(new Token(TokenType.LeftBracket, "[", _line, _column));
-            else if (c == ']')
-                tokens.Add(new Token(TokenType.RightBracket, "]", _line, _column));
+            else if (_isLeftBracket(c))
+                tokens.Add(new Token(TokenType.LeftBracket, TokenType.LeftBracket.GetString(), _line, _column));
+            else if (_isRightBracket(c))
+                tokens.Add(new Token(TokenType.RightBracket, TokenType.RightBracket.GetString(), _line, _column));
             else
                 tokens.Add(MatchOperatorOrUnknown(c));
         }
-        tokens.Add(new Token(TokenType.EndOfFile, "", _line, _column));
+        tokens.Add(new Token(TokenType.EndOfFile, TokenType.EndOfFile.GetString(), _line, _column));
         return tokens;
     }
+
+    #region The «MatchOperatorOrUnknown()» Method
+    //
+    // Summary:
+    //     Matches a single or multi-character operator or returns an unknown token if unmatched.
+    // Parameters:
+    //     c: The current character to match.
+    // Returns:
+    //     A token representing the matched operator or unknown token.
+    private Token MatchOperatorOrUnknown(char c)
+    {
+        switch (c)
+        {
+            case var _ when c == TokenType.Plus.GetChar():
+                return GetPlusToken(c);
+            case var _ when c == TokenType.Minus.GetChar():
+                return GetMinusToken(c);
+            case var _ when c == TokenType.Multiply.GetChar():
+                return CreateToken(TokenType.Multiply);
+            case var _ when c == TokenType.Divide.GetChar():
+                return CreateToken(TokenType.Divide);
+            case var _ when c == TokenType.Modulo.GetChar():
+                return CreateToken(TokenType.Modulo);
+            case var _ when c == TokenType.Assign.GetChar():
+                return GetEqualToken(c);
+            case var _ when c == TokenType.NotEqual.GetChar():
+                return GetNotEqualToken(c);
+            case var _ when c == TokenType.Less.GetChar():
+                return GetLessOrEqualsToken(c);
+            case var _ when c == TokenType.Greater.GetChar():
+                return GetGreaterOrEqualsToken(c);
+            case var _ when c == TokenType.LogicalAnd.GetChar():
+                return GetAndToken(c);
+            case var _ when c == TokenType.LogicalOr.GetChar():
+                return GetOrToken(c);
+            case var _ when c == TokenType.Colon.GetChar():
+                return GetShortAssignToken(c);
+            case var _ when c == TokenType.Semicolon.GetChar():
+                return CreateToken(TokenType.Semicolon);
+            case var _ when c == TokenType.LeftBrace.GetChar():
+                return CreateToken(TokenType.LeftBrace);
+            case var _ when c == TokenType.RightBrace.GetChar():
+                return CreateToken(TokenType.RightBrace);
+            case var _ when c == TokenType.LeftParen.GetChar():
+                return CreateToken(TokenType.LeftParen);
+            case var _ when c == TokenType.RightParen.GetChar():
+                return CreateToken(TokenType.RightParen);
+            case var _ when c == TokenType.Dot.GetChar():
+                return CreateToken(TokenType.Dot);
+            case var _ when c == TokenType.Comma.GetChar():
+                return CreateToken(TokenType.Comma);
+        }
+        return CreateToken(TokenType.Unknown);
+    }
+
+    private Token GetPlusToken(char c)
+    {
+        if (Peek() == TokenType.Plus.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.Increment);
+        }
+        return CreateToken(TokenType.Plus);
+    }
+
+    private Token GetMinusToken(char c)
+    {
+        if (Peek() == TokenType.Minus.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.Decrement);
+        }
+        return CreateToken(TokenType.Minus);
+    }
+
+    private Token GetEqualToken(char c)
+    {
+        if (Peek() == TokenType.Assign.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.Equal);
+        }
+        return CreateToken(TokenType.Assign);
+    }
+
+    private Token GetNotEqualToken(char c)
+    {
+        if (Peek() == TokenType.Assign.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.NotEqual);
+        }
+        return CreateToken(TokenType.Unknown);
+    }
+
+    private Token GetLessOrEqualsToken(char c)
+    {
+        if (Peek() == TokenType.Assign.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.LessOrEqual);
+        }
+        return CreateToken(TokenType.Less);
+    }
+
+    private Token GetGreaterOrEqualsToken(char c)
+    {
+        if (Peek() == TokenType.Assign.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.GreaterOrEqual);
+        }
+        return CreateToken(TokenType.Greater);
+    }
+
+    private Token GetAndToken(char c)
+    {
+        if (Peek() == TokenType.LogicalAnd.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.And);
+        }
+        return CreateToken(TokenType.Unknown);
+    }
+
+    private Token GetOrToken(char c)
+    {
+        if (Peek() == TokenType.LogicalOr.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.Or);
+        }
+        return CreateToken(TokenType.Unknown);
+    }
+
+    private Token GetShortAssignToken(char c)
+    {
+        if (Peek() == TokenType.Assign.GetChar())
+        {
+            Advance();
+            return CreateToken(TokenType.ShortAssign);
+        }
+        return CreateToken(TokenType.Unknown);
+    }
+
+    private Token CreateToken(TokenType tokenType) =>
+        new(tokenType, tokenType.GetString(), _line, _column);
+    #endregion
 
     #region «ScanTokens()» Method Helpers
     //
@@ -87,14 +240,14 @@ public class Lexer(string sourceCode)
     {
         string identifier = ReadWhile(_isLetterOrDigitOrUnderscore);
 
-        if (identifier == "fmt" && Peek() == '.')
+        if (identifier == TokenType.Print.GetFormatPackageName() && Peek() == TokenType.Dot.GetChar())
         {
             Advance();
             Advance();
             string nextPart = ReadWhile(_isLetterOrDigit);
-            if (nextPart == "Print")
+            if (nextPart == TokenType.Print.GetPrintFunctionName())
             {
-                tokens.Add(new Token(TokenType.Print, "fmt.Print", _line, _column));
+                tokens.Add(new Token(TokenType.Print, TokenType.Print.GetString(), _line, _column));
                 return;
             }
         }
@@ -118,7 +271,7 @@ public class Lexer(string sourceCode)
     private void HandleNumber(List<Token> tokens)
     {
         string number = ReadWhile(_isDigit);
-        if (Peek() == '.')
+        if (Peek() == TokenType.Dot.GetChar())
         {
             Advance();
             string fractionalPart = ReadWhile(_isDigit);
@@ -171,7 +324,7 @@ public class Lexer(string sourceCode)
     private string ReadString()
     {
         var result = new StringBuilder();
-        while (!IsAtEnd() && Peek() != '"')
+        while (!IsAtEnd() && Peek() != TokenType.StringLiteral.GetChar())
             result.Append(Advance());
 
         if (IsAtEnd())
@@ -179,94 +332,6 @@ public class Lexer(string sourceCode)
 
         Advance();
         return result.ToString();
-    }
-
-    //
-    // Summary:
-    //     Matches a single or multi-character operator or returns an unknown token if unmatched.
-    // Parameters:
-    //     c: The current character to match.
-    // Returns:
-    //     A token representing the matched operator or unknown token.
-    private Token MatchOperatorOrUnknown(char c)
-    {
-        switch (c)
-        {
-            case '+':
-                if (Peek() == '+')
-                {
-                    Advance();
-                    return new Token(TokenType.Increment, "++", _line, _column);
-                }
-                return new Token(TokenType.Plus, c.ToString(), _line, _column);
-            case '-':
-                if (Peek() == '-')
-                {
-                    Advance();
-                    return new Token(TokenType.Decrement, "--", _line, _column);
-                }
-                return new Token(TokenType.Minus, c.ToString(), _line, _column);
-            case '*': return new Token(TokenType.Multiply, c.ToString(), _line, _column);
-            case '/': return new Token(TokenType.Divide, c.ToString(), _line, _column);
-            case '%': return new Token(TokenType.Modulo, c.ToString(), _line, _column);
-            case '=':
-                if (Peek() == '=')
-                {
-                    Advance();
-                    return new Token(TokenType.Equal, "==", _line, _column);
-                }
-                return new Token(TokenType.Assign, "=", _line, _column);
-            case '!':
-                if (Peek() == '=')
-                {
-                    Advance();
-                    return new Token(TokenType.NotEqual, "!=", _line, _column);
-                }
-                break;
-            case '<':
-                if (Peek() == '=')
-                {
-                    Advance();
-                    return new Token(TokenType.LessOrEqual, "<=", _line, _column);
-                }
-                return new Token(TokenType.Less, "<", _line, _column);
-            case '>':
-                if (Peek() == '=')
-                {
-                    Advance();
-                    return new Token(TokenType.GreaterOrEqual, ">=", _line, _column);
-                }
-                return new Token(TokenType.Greater, ">", _line, _column);
-            case '&':
-                if (Peek() == '&')
-                {
-                    Advance();
-                    return new Token(TokenType.And, "&&", _line, _column);
-                }
-                break;
-            case '|':
-                if (Peek() == '|')
-                {
-                    Advance();
-                    return new Token(TokenType.Or, "||", _line, _column);
-                }
-                break;
-            case ':':
-                if (Peek() == '=')
-                {
-                    Advance();
-                    return new Token(TokenType.ShortAssign, ":=", _line, _column);
-                }
-                break;
-            case ';': return new Token(TokenType.Semicolon, c.ToString(), _line, _column);
-            case '{': return new Token(TokenType.LeftBrace, c.ToString(), _line, _column);
-            case '}': return new Token(TokenType.RightBrace, c.ToString(), _line, _column);
-            case '(': return new Token(TokenType.LeftParen, c.ToString(), _line, _column);
-            case ')': return new Token(TokenType.RightParen, c.ToString(), _line, _column);
-            case '.': return new Token(TokenType.Dot, c.ToString(), _line, _column);
-            case ',': return new Token(TokenType.Comma, c.ToString(), _line, _column);
-        }
-        return new Token(TokenType.Unknown, c.ToString(), _line, _column);
     }
 
     //
@@ -285,7 +350,7 @@ public class Lexer(string sourceCode)
     {
         if (char.IsWhiteSpace(c))
         {
-            if (c == '\n')
+            if (c == TokenType.NewLine.GetChar())
             {
                 _line++;
                 _column = 1;
@@ -308,7 +373,7 @@ public class Lexer(string sourceCode)
     //
     // Returns:
     //     The next character in the source code or null character ('\0') if at the end of the source code.
-    private char Peek() => IsAtEnd() ? '\0' : _source[_current];
+    private char Peek() => IsAtEnd() ? TokenType.Null.GetChar() : _source[_current];
 
     //
     // Returns:

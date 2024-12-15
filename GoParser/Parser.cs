@@ -1,4 +1,4 @@
-﻿using GoLexer;
+﻿using GoLexer.Tokens;
 
 namespace GoParser;
 
