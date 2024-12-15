@@ -14,6 +14,8 @@ public class Lexer(string sourceCode)
 
     private static readonly Func<char, bool> _isLetterOrDigitOrUnderscore =
         ch => char.IsLetterOrDigit(ch) || ch == '_';
+    private static readonly Func<char, bool> _isLetterOrDigit =
+        ch => char.IsLetterOrDigit(ch);
     private static readonly Func<char, bool> _isLetterOrUnderscore =
         ch => char.IsLetter(ch) || ch == '_';
     private static readonly Func<char, bool> _isDigit =
@@ -59,6 +61,10 @@ public class Lexer(string sourceCode)
                 HandleNumber(tokens);
             else if (_isString(c))
                 HandleString(tokens);
+            else if (c == '[')
+                tokens.Add(new Token(TokenType.LeftBracket, "[", _line, _column));
+            else if (c == ']')
+                tokens.Add(new Token(TokenType.RightBracket, "]", _line, _column));
             else
                 tokens.Add(MatchOperatorOrUnknown(c));
         }
@@ -70,6 +76,7 @@ public class Lexer(string sourceCode)
     //
     // Summary:
     //     Reads the entire identifier.
+    //     Checks for the "fmt.Print", consumes the 't' and '.', reads the 'Print' part, and adds an appropriate token.
     //     Checks if the identifier is a keyword (var, func, if etc.).
     //     If the identifier is found in the «Keywords» dictionary, adds the corresponding keyword token to the list.
     //     Otherwise, treats it as a user-defined identifier and creates a token of type «Identifier» (x, myVar etc.).
@@ -78,6 +85,19 @@ public class Lexer(string sourceCode)
     private void HandleKeywordOrIdentifier(List<Token> tokens)
     {
         string identifier = ReadWhile(_isLetterOrDigitOrUnderscore);
+
+        if (identifier == "fmt" && Peek() == '.')
+        {
+            Advance();
+            Advance();
+            string nextPart = ReadWhile(_isLetterOrDigit);
+            if (nextPart == "Print")
+            {
+                tokens.Add(new Token(TokenType.Print, "fmt.Print", _line, _column));
+                return;
+            }
+        }
+
         if (Keywords.TryGetValue(identifier, out TokenType keyword))
             tokens.Add(new Token(keyword, identifier, _line, _column));
         else
@@ -171,8 +191,20 @@ public class Lexer(string sourceCode)
     {
         switch (c)
         {
-            case '+': return new Token(TokenType.Plus, c.ToString(), _line, _column);
-            case '-': return new Token(TokenType.Minus, c.ToString(), _line, _column);
+            case '+':
+                if (Peek() == '+')
+                {
+                    Advance();
+                    return new Token(TokenType.Increment, "++", _line, _column);
+                }
+                return new Token(TokenType.Plus, c.ToString(), _line, _column);
+            case '-':
+                if (Peek() == '-')
+                {
+                    Advance();
+                    return new Token(TokenType.Decrement, "--", _line, _column);
+                }
+                return new Token(TokenType.Minus, c.ToString(), _line, _column);
             case '*': return new Token(TokenType.Multiply, c.ToString(), _line, _column);
             case '/': return new Token(TokenType.Divide, c.ToString(), _line, _column);
             case '%': return new Token(TokenType.Modulo, c.ToString(), _line, _column);
@@ -225,6 +257,7 @@ public class Lexer(string sourceCode)
                     return new Token(TokenType.ShortAssign, ":=", _line, _column);
                 }
                 break;
+            case ';': return new Token(TokenType.Semicolon, c.ToString(), _line, _column);
             case '{': return new Token(TokenType.LeftBrace, c.ToString(), _line, _column);
             case '}': return new Token(TokenType.RightBrace, c.ToString(), _line, _column);
             case '(': return new Token(TokenType.LeftParen, c.ToString(), _line, _column);
