@@ -7,7 +7,7 @@
 //         logical operators, assignment operators, delimiters, literals and special tokens.
 public enum TokenType
 {
-    Var, Func, If, Else, For, Return, Range, Print,
+    Var, Func, If, Else, For, Return, Range, Print, Len,
 
     Int, Float32, String, Bool,
 

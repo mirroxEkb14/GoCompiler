@@ -41,7 +41,8 @@ public class Lexer(string sourceCode)
             { "float32", TokenType.Float32 },
             { "string", TokenType.String },
             { "bool", TokenType.Bool },
-            { "fmt.Print", TokenType.Print }
+            { "fmt.Print", TokenType.Print },
+            { "len", TokenType.Len }
         };
 
     public List<Token> ScanTokens()
